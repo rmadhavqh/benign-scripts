@@ -14,7 +14,7 @@ Write-Output "[+] Retrieving Installed Software (Top 10)..."
 Get-WmiObject -Query "SELECT * FROM Win32_Product" | Select-Object Name, Version -First 10 | Format-Table -AutoSize | Out-String
 
 Write-Output "[+] Checking Current Logged-In Users..."
-Get-Process -IncludeUserName | Select-Object ProcessName, UserName -First 5 | Format-Table -AutoSize | Out-String
+Get-WMIObject -Class Win32_ComputerSystem | Select-Object UserName | Format-Table -AutoSize | Out-String
 
 Write-Output "[+] Fetching Recent Event Logs..."
 Get-WinEvent -LogName System -MaxEvents 5 | Select-Object TimeCreated, Id, Message | Format-Table -AutoSize | Out-String
